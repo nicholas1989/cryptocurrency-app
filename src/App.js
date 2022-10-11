@@ -1,12 +1,15 @@
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link
+} from "react-router-dom";
 import CoinGecko from "coingecko-api";
 import authService from "./services/authentication"
 import { useEffect, useState } from "react";
 
 
-function App() {
-  const [user, setUser] = useState(() => {
-    return authService.getUser()
-  })
+function Home() {
   const [coins, setCoins] = useState(null)
 
   useEffect(() => {
@@ -27,23 +30,9 @@ function App() {
 
   }, [])
 
-  function handleLogout() {
-    authService.logout()
-    setUser(null)
-  }
-
-  function handleLogin() {
-    const user = authService.login()
-    setUser(user)
-  }
-
+  
   return (
     <div>
-    { user ? (
-      <button onClick={handleLogout}>Logout</button>
-    ): (
-      <button onClick={handleLogin}>Login</button>
-    )}
       { coins && (
         <ul>
           {coins.map(coin => {
@@ -59,4 +48,62 @@ function App() {
   );
 }
 
-export default App;
+
+function About() {
+  return (
+    <div>
+      About
+    </div>
+  )
+}
+
+function NavBar() {
+  const [user, setUser] = useState(() => {
+    return authService.getUser()
+  })
+
+  function handleLogout() {
+    authService.logout()
+    setUser(null)
+  }
+
+  function handleLogin() {
+    const user = authService.login()
+    setUser(user)
+  }
+
+  return (
+    <nav>
+      { user ? (
+        <button onClick={handleLogout}>Logout</button>
+      ): (
+        <button onClick={handleLogin}>Login</button>
+      )}
+      <ul>
+        <li>
+          <Link to="/">Home</Link>
+        </li>
+        <li>
+          <Link to="/about">About</Link>
+        </li>
+      </ul>
+    </nav>
+    
+  )
+}
+
+export default function App() {
+  return (
+    <Router>
+      <div>
+      <NavBar />
+        <Routes>
+          <Route path="/" element={<Home/>} exact />
+        </Routes>
+        <Routes>
+          <Route path="/about" element={<About/>} exact />
+        </Routes>
+      </div>
+    </Router>
+  );
+}
