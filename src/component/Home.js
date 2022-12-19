@@ -32,9 +32,10 @@ export function Home() {
           <ul>
             {coins.map(coin => {
               return (
-                <li key={coin.id} className="mt-2 py-3 border px-2 border-gray-200 rounded-sm">
-                  <Link to={`/${coin.id}/`} className="hover:text-blue-600">
-                    {coin.id}
+                <li key={coin.id} className="mt-2 py-3 border px-5 border-gray-200 rounded-sm">
+                  <img src={coin.image.small} alt={coin.id} className="w-10 h-10"/>
+                  <Link to={`/${coin.id}/`} className=" ml-3 hover:text-blue-600">
+                    {coin.name}
                   </Link>
                 </li>
               )

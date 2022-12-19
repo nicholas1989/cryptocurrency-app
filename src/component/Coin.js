@@ -4,11 +4,14 @@ import { useEffect, useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
 import { LineChart } from "./LineChart";
+import { Loader } from "./Loader";
+
 
 
 export function Coin() {
     const { coinId } = useParams()
     const { user } = useContext(AuthContext)
+    const [coin, setCoin] = useState(null)
     const [priceData, setpriceData] = useState(null)
     const [labels, setLabels] = useState(null)
 
@@ -26,7 +29,7 @@ export function Coin() {
             return `${date.getFullYear()}/${date.getMonth()}/${date.getDate()}`
         }
 
-        async function fetchCoin() {
+        async function fetchCoinMarketData() {
         const response = await CoinGeckoClient.coins.fetchMarketChartRange(
             coinId, 
             {
@@ -35,34 +38,47 @@ export function Coin() {
                 to: currentDayUnix,
             }
         )
+        console.log(response);
         setpriceData(response.data.prices.map(item=>item[1]))
         setLabels(response.data.prices.map(item=> formatUnix(item[0])))
         return response
         }
         
-        fetchCoin()
+        async function fetchCoin() {
+            const response = await CoinGeckoClient.coins.fetch(coinId)
+            setCoin(response.data)
+            return response
+        }
 
-    }, [coinId])
+        if (user) {
+            fetchCoinMarketData()
+            fetchCoin()
+        }
+
+    }, [coinId, user])
 
     return (
         <div>
-            <div className="border-t border-gray-200 py-5">
-            <h2 className="text-2xl text-gray-800">{coinId}</h2>
-            </div>
-            {!priceData && (
-                <div className="bg-gray-100 rounded-sm py-5 text-center">
-                    <h4 className="text-xl text-gray-600">Loading...</h4>
-                </div>
-            )}
             {user ? (
                 <>
-                    {priceData && labels && (
-                        <LineChart labels={labels} coinId={coinId} priceData={priceData}/>
+                    {(!coin || !priceData) && <Loader />}
+                    {coin && priceData && (
+                        <>
+                            <div className="flex items-center border-t border-gray-200 py-5">
+                                <img src={coin.image.small} alt={coin.name} className="w-12 h-12"/>
+                                <h2 className="ml-2 text-2xl text-gray-800">{coinId}</h2>
+                            </div>
+                            {priceData && labels && (
+                                <LineChart labels={labels} coinId={coinId} priceData={priceData}/>
+                            )}
+                        </>
                     )}
                 </>
+
             ):(
                 <p>You need to be logged in to view the chart</p>
-            )}
+            )}    
+            
         </div>
     )
 }
